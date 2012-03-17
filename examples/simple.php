@@ -7,5 +7,6 @@
 	 */
 	include('../IRCphpAPI.php');
 
-	$objIRC=IRCphpAPI('irc.chatspike.net', 6667, '#blahertech');
+	$objIRC=new IRCphpAPI('irc.chatspike.net', 6667, '#blahertech', 'apiTest');
+	unset($objIRC);
 ?>
