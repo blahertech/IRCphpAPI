@@ -14,24 +14,24 @@
 			$strServer, $intPort=6667, $strNick='IRCphpAPI', $strChannel=false
 		)
 		{
+			$intMsgSize=256;
+			
 			//set_time_limit(0);
 			if ($this->connect($strServer, $intPort))
 			{
 				$this->nick($strNick);
 
-				$strBuffer=fgets($this->rscConnection, 1024);
+				$strBuffer=fgets($this->rscConnection, $intMsgSize);
 				$this->strServer=substr
 				(
 					$strBuffer, 1, strpos($strBuffer, ' ')-1
 				);
 
+				$bolJoin=false;
+				$bolPong=false;
 				while (!feof($this->rscConnection))
 				{
-					$strBuffer=fgets($this->rscConnection, 1024);
-					if ($strBuffer && $strBuffer!='')
-					{
-						echo '[RECIVE] ',$strBuffer,"<br />\n";
-					}
+					$strBuffer=$this->get($intMsgSize);
 
 					if ($this->error(433, $strBuffer))
 					{
@@ -48,11 +48,18 @@
 
 					if ($strChannel && $this->error(422, $strBuffer))
 					{
+						$bolJoin=true;
 						$this->join($strChannel);
 					}
 					if (substr($strBuffer, 0, 6)=='PING :')
 					{
+						$bolPong=true;
 						$this->send('PONG :'.substr($strBuffer, 6));
+					}
+					
+					if ($bolJoin && $bolPong)
+					{
+						break;
 					}
 					flush();
 				}
@@ -67,6 +74,16 @@
 			(
 				$this->rscConnection, $strMessage, strlen($strMessage)
 			);
+		}
+		
+		private function get($intMsgSize)
+		{
+			$strBuffer=fgets($this->rscConnection, $intMsgSize);
+			if ($strBuffer && $strBuffer!='')
+			{
+				echo '[RECIVE] ',$strBuffer,"<br />\n";
+			}
+			return $strBuffer;
 		}
 
 		private function connect($strServer, $intPort=6667)
