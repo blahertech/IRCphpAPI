@@ -16,7 +16,6 @@
 		{
 			$intMsgSize=256;
 			
-			//set_time_limit(0);
 			if ($this->connect($strServer, $intPort))
 			{
 				$this->nick($strNick);
@@ -28,7 +27,6 @@
 				);
 
 				$bolJoin=false;
-				$bolPong=false;
 				while (!feof($this->rscConnection))
 				{
 					$strBuffer=$this->get($intMsgSize);
@@ -51,19 +49,42 @@
 						$bolJoin=true;
 						$this->join($strChannel);
 					}
-					if (substr($strBuffer, 0, 6)=='PING :')
-					{
-						$bolPong=true;
-						$this->send('PONG :'.substr($strBuffer, 6));
-					}
 					
-					if ($bolJoin && $bolPong)
+					$this->refresh($strBuffer);
+					if ($bolJoin || !$strChannel)
 					{
 						break;
 					}
-					flush();
+				}
+				
+				while (!feof($this->rscConnection))
+				{
+					$strBuffer=$this->get($intMsgSize);
+					$this->refresh($strBuffer);
+					if (!$this->process($strBuffer))
+					{
+						break 2;
+					}
 				}
 			}
+		}
+		
+		private function refresh($strBuffer)
+		{
+			if (substr($strBuffer, 0, 6)=='PING :')
+			{
+				$this->send('PONG :'.substr($strBuffer, 6));
+			}
+			flush();
+		}
+		
+		public function process($strBuffer)
+		{
+			if (strpos($strBuffer, ' :!kill'))
+			{
+				return false;
+			}
+			return true;
 		}
 
 		private function send($strMessage)

@@ -7,6 +7,20 @@
 	 */
 	include('../IRCphpAPI.php');
 
-	$objIRC=new IRCphpAPI('irc.chatspike.net', 6667, 'PHPbot', '#blahertech');
+	class IRCtest extends IRCphpAPI
+	{
+		public function process($strBuffer)
+		{
+			if (strpos($strBuffer, ' :!kill'))
+			{
+				return false;
+			}
+			return true;
+		}
+	}
+
+	$objIRC=new IRCtest('irc.chatspike.net', 6667, 'PHPbot', '#blahertech');
 	unset($objIRC);
+
+	die();
 ?>
