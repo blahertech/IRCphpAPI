@@ -5,16 +5,19 @@
 	 * @author Benjamin Jay Young <blaher@blahertech.org>
 	 * @version 1.0
 	 */
-	class IRCphpAPI
+	abstract class IRCphpAPI
 	{
 		private $rscConnection, $strServer, $intPort, $aryChannels, $strNick;
+
+		abstract public function process($strBuffer);
+		abstract public function report($strRMessage);
 
 		public function __construct
 		(
 			$strServer, $intPort=6667, $strNick='IRCphpAPI', $strChannel=false
 		)
 		{
-			$intMsgSize=256;
+			$intMsgSize=1024;
 			
 			if ($this->connect($strServer, $intPort))
 			{
@@ -77,19 +80,10 @@
 			}
 			flush();
 		}
-		
-		public function process($strBuffer)
-		{
-			if (strpos($strBuffer, ' :!kill'))
-			{
-				return false;
-			}
-			return true;
-		}
 
 		private function send($strMessage)
 		{
-			echo '[SEND] ',$strMessage,"<br />\n";
+			$this->report('[SEND] '.$strMessage);
 			$strMessage.="\n\r";
 			@fwrite
 			(
@@ -102,13 +96,16 @@
 			$strBuffer=fgets($this->rscConnection, $intMsgSize);
 			if ($strBuffer && $strBuffer!='')
 			{
-				echo '[RECIVE] ',$strBuffer,"<br />\n";
+				$this->report('[RECIVE] '.$strBuffer);
 			}
 			return $strBuffer;
 		}
 
 		private function connect($strServer, $intPort=6667)
 		{
+			$this->report('Connecting...');
+			$this->intPort=$intPort;
+
 			$this->rscConnection=@fsockopen
 			(
 				$strServer, $intPort, $intError, $strError, 2

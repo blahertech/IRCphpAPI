@@ -17,6 +17,11 @@
 			}
 			return true;
 		}
+		
+		public function report($strMessage)
+		{
+			echo $strMessage,"<br />\n";
+		}
 	}
 
 	$objIRC=new IRCtest('irc.chatspike.net', 6667, 'PHPbot', '#blahertech');
