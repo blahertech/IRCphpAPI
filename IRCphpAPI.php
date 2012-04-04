@@ -119,7 +119,12 @@
 
 		private function disconnect()
 		{
-			
+			$this->report('Disconnecting...');
+		}
+		
+		public function message($strChannel, $strMessage)
+		{
+			// TODO: $this->send('...'.$strMessage);
 		}
 
 		public function join($strChannel)
